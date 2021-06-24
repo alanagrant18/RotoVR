@@ -84,7 +84,7 @@ public class TestController2 : MonoBehaviour
     **/
     static string[] ReadText()
     {
-        string path = "C:/Users/MIG/Documents/Rotating Chair/RotoVR/Assets/anglesSpeeds.txt";
+        string path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/anglesSpeeds.txt";
         string[] values;
 
         string text = System.IO.File.ReadAllText(@path);
@@ -109,6 +109,10 @@ public class TestController2 : MonoBehaviour
         if (rotation >= angle - 3 && rotation <= angle + 3)
         {
             Debug.Log("Rotation " + rotation);
+
+            controller.SetCurrentPositionToZero();
+            Debug.Log("Setting to zero");
+
             return true;
         }
         else
@@ -130,7 +134,6 @@ public class TestController2 : MonoBehaviour
         //for each rotation in the text file, excecute rotation and then wait 5s, value[i] = angle, value[i+1] = speed
         for (int i = 0; i < values.Length - 1; i += 2)
         {
-            //done = false;
 
             controller.TurnRightAtSpeed(int.Parse(values[i]), int.Parse(values[i + 1]));
             Debug.Log("Turning: " + values[i] + "   Speed: " + values[i + 1]);
@@ -138,13 +141,9 @@ public class TestController2 : MonoBehaviour
             Debug.Log("Waiting until true");
             yield return new WaitUntil(() => CalcRotating(int.Parse(values[i])));
 
-            //StartCoroutine(Wait(10));
-
-            yield return new WaitForSecondsRealtime(5);
             Debug.Log("Waiting");
-
-            controller.SetCurrentPositionToZero();
-            Debug.Log("Setting to zero");
+            yield return new WaitForSecondsRealtime(5);
+            
 
 
 
