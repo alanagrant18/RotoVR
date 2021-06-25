@@ -11,7 +11,6 @@ public class TestController : MonoBehaviour
     bool flag = true;
     float timer = 5;
     public int rotation;
-    bool done = false;
 
     /**
     bool isFirstTime = true;
@@ -36,18 +35,6 @@ public class TestController : MonoBehaviour
     {
         rotation = controller.GetOutputRotation();
 
-        /**
-        if (flag)
-        {
-            timer -= Time.deltaTime;
-            if (timer < 0)
-            {
-                flag = false;
-                sidetosiderotation();
-            }
-        }
-        **/
-
         if (Input.GetKey(KeyCode.Alpha1))
         {
             Debug.Log("Performing calibration");
@@ -62,37 +49,220 @@ public class TestController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
-            ReadText();
             //sidetosiderotation();
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha4))
         {
             controller.SetCurrentPositionToZero();
-            Drive();
+            StartCoroutine(Drive());
         }
-
 
         if (Input.GetKeyUp(KeyCode.LeftArrow))
         {
             controller.TurnLeftAtSpeed(90, 30);
-            //Debug.LogFormat("Turn Left At Speed {0}", res);
         }
 
         if (Input.GetKeyUp(KeyCode.RightArrow))
         {
             controller.TurnRightAtSpeed(65, 20);
-            //Debug.Log(controller.GetOutputRotation());
-            //Debug.Log(controller.currentAngle);
         }
 
         if (Input.GetKeyUp(KeyCode.UpArrow))
         {
-            //controller.TurnLeftAtSpeed(0, 50);
             Debug.Log("Rotation " + controller.GetOutputRotation());
             Debug.Log("Current angle " + controller.currentAngle);
         }
 
+    }
+
+
+    /**
+     * The 3 main functions 
+    **/
+    static string[] ReadText()
+    {
+        string path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/anglesSpeeds.txt";
+        string[] values;
+
+        string text = System.IO.File.ReadAllText(@path);
+
+        values = text.Split(char.Parse("\n"), char.Parse(","));
+
+        /**
+        Debug.Log(values[0]);
+        Debug.Log(values[1]);
+        Debug.Log(values[2]);
+        Debug.Log(values[3]);
+        Debug.Log(values[4]);
+        Debug.Log(values[5]);
+        Debug.Log(values[6]);
+        Debug.Log(values[7]);
+        **/
+
+        return values;
+
+    }
+
+
+    private bool CalcRotatingRight(int angle)
+    {
+        if (rotation >= angle - 3 && rotation <= angle + 3)
+        {
+            //.Log("Rotation calc right: " + rotation);
+
+            controller.SetCurrentPositionToZero();
+            //Debug.Log("Setting to zero");
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool CalcRotatingLeft(int angle)
+    {
+        if (rotation >= (360-angle) - 3 && rotation <= (360-angle) + 3)
+        {
+            //Debug.Log("Rotation calc left: " + rotation);
+
+            controller.SetCurrentPositionToZero();
+            //Debug.Log("Setting to zero");
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    /**
+    * This code is my attempt to try stop the chair from continually spinning or excuting the rest 
+    * of the loop before waiting the 5s by having it wait untill the angle is correct, however this hasnt worked so far.
+    **/
+    public IEnumerator Drive()
+    {
+        string[] values;
+        values = ReadText();
+
+        //for each rotation in the text file, excecute rotation and then wait 5s, value[i] = angle, value[i+1] = speed
+        for (int i = 0; i < values.Length-1; i += 4)
+        {
+            if (char.Parse(values[i]).Equals('R'))
+            {
+                controller.TurnRightAtSpeed(int.Parse(values[i+1]), int.Parse(values[i+2]));
+                Debug.Log("TURNING RIGHT: " + values[i+1] + "   SPEED: " + values[i+2]);
+
+                //Debug.Log("Waiting until true");
+                yield return new WaitUntil(() => CalcRotatingRight(int.Parse(values[i+1])));
+
+                Debug.Log("Waiting " + values[i+3] + " seconds");
+                yield return new WaitForSecondsRealtime(int.Parse(values[i+3]));
+            }
+
+            else if (char.Parse(values[i]).Equals('L'))
+            {
+                controller.TurnLeftAtSpeed(int.Parse(values[i+1]), int.Parse(values[i+2]));
+                Debug.Log("TURNING LEFT: " + values[i+1] + "   SPEED: " + values[i+2]);
+
+                //Debug.Log("Waiting until true");
+                yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(values[i+1])));
+
+                Debug.Log("Waiting " + values[i+3] + " seconds");
+                yield return new WaitForSecondsRealtime(int.Parse(values[i+3]));
+            }
+            else
+            {
+                Debug.Log(values[i]);
+                Debug.Log("Something has gone wrong");
+            }
+        }
+        Debug.Log("Done Rotating");
+    }
+
+
+
+
+
+    /**
+     * The following is different attempts of trying to get the chair to wait, 
+     * not used in the Drive function right now but could be used if you think they would work better
+     **/
+    public IEnumerator Wait(int second)
+    {
+        yield return new WaitForSecondsRealtime(second);
+        Debug.Log("Waiting");
+
+        controller.SetCurrentPositionToZero();
+        Debug.Log("Setting to zero");
+    }
+
+    /**
+    public IEnumerator WaitRotating(int angle)
+    {
+        while (CalcRotating(angle) is false)
+        {
+
+        }
+
+        Debug.Log("Waiting untill true");
+        yield return new WaitUntil(() => CalcRotating(angle));
+        //done = true;
+        //Debug.Log("Done is true");
+
+    }
+    **/
+
+    private void wait2(int seconds)
+    {
+        if (flag)
+        {
+            Debug.Log("Waiting");
+            timer -= Time.deltaTime;
+            if (timer < 0)
+            {
+                flag = false;
+            }
+        }
+    }
+
+
+    private void turnLeft()
+    {
+        controller.TurnLeftAtSpeed(90, 25);
+        Debug.Log("Turning left");
+        flag = true;
+    }
+
+
+    private void turnRight()
+    {
+        controller.TurnRightAtSpeed(90, 25);
+        Debug.Log("Turning right");
+    }
+
+
+    IEnumerator turnLeftWait()
+    {
+        yield return new WaitForSeconds(3);
+        Debug.Log("Waiting left");
+
+        controller.TurnLeftAtSpeed(90, 25);
+        Debug.Log("Turning left");
+    }
+
+
+    IEnumerator turnRightWait()
+    {
+        yield return new WaitForSeconds(3);
+        Debug.Log("Waiting right");
+
+        controller.TurnRightAtSpeed(90, 25);
+        Debug.Log("Turning right");
     }
 
 
@@ -134,207 +304,6 @@ public class TestController : MonoBehaviour
         sidetosiderotation();
     }
     **/
-
-
-
-
-
-
-
-    /**
-     * The 2 main functions 
-    **/
-    static string[] ReadText()
-    {
-        string path = "C:/Users/MIG/Documents/Rotating Chair/RotoVR/Assets/anglesSpeeds.txt";
-        string[] values;
-
-        string text = System.IO.File.ReadAllText(@path);
-
-        values = text.Split(char.Parse(","));
-
-        /**
-        foreach (string line in text)
-        {
-            values = line.Split(char.Parse(","));
-            
-        }
-        **/
-
-        return values;
-
-    }
-
-    private bool CalcRotating(int angle)
-    {
-        if (rotation >= angle - 5 && rotation <= angle + 5)
-        {
-            Debug.Log("Rotation " + rotation);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-
-    public IEnumerator WaitRotating(int angle)
-    {
-        /**
-        * This code is my attempt to try stop the chair from continually spinning or excuting the rest 
-        * of the loop before waiting the 10s by having it check the angle, however this hasnt worked so far.
-        **/
-
-        Debug.Log("Waiting untill true");
-        yield return new WaitUntil(() => CalcRotating(angle));
-        done = true;
-        Debug.Log("Done is true");
-
-
-
-        /**
-        angle += int.Parse(values[i]) + 1;
-        Debug.Log("Angle: " + angle);
-        Debug.Log("Current Angle: " + controller.currentAngle);
-
-        if (controller.currentAngle != angle)
-        {
-            yield return new WaitForSecondsRealtime(10);
-            Debug.Log("Waiting");
-        }
-        **/
-
-    }
-
-
-
-    public void Drive()
-    {
-        string[] values;
-        values = ReadText();
-        //int angle = 0;
-
-        for (int i = 0; i < values.Length - 1; i += 2)
-        {
-            controller.TurnRightAtSpeed(int.Parse(values[i]), int.Parse(values[i + 1]));
-            Debug.Log("Turning: " + values[i] + "   Speed: " + values[i + 1]);
-
-            while(done is false)
-            {
-                Debug.Log("In the while loop");
-                StartCoroutine(WaitRotating(int.Parse(values[i])));
-            }
-
-            StartCoroutine(Wait(10));
-
-
-
-
-            /**
-            if (DoneRotating(int.Parse(values[i])).Equals(1))
-            {
-                yield return new WaitForSecondsRealtime(10);
-                Debug.Log("Waiting");
-            }
-
-
-            
-            //for each rotation in the text file, excecute rotation and then wait 10s, value[i] = angle, value[i+1] = speed
-            for (int i = 0; i < values.Length - 1; i += 4)
-            {
-                if (char.Parse(values[i]).Equals('R'))
-                {
-                    controller.TurnRightAtSpeed(int.Parse(values[i + 1]), int.Parse(values[i + 2]));
-                    Debug.Log("Turning right: " + values[i + 1] + "   Speed: " + values[i + 2]);
-
-                    yield return new WaitForSecondsRealtime(int.Parse(values[i + 3]));
-                    Debug.Log("Waiting");
-                }
-
-                else if (char.Parse(values[i]).Equals('L'))
-                {
-                    controller.TurnLeftAtSpeed(int.Parse(values[i + 1]), int.Parse(values[i + 2]));
-                    Debug.Log("Turning left: " + values[i + 1] + "   Speed: " + values[i + 2]);
-
-                    yield return new WaitForSecondsRealtime(int.Parse(values[i + 3]));
-                    Debug.Log("Waiting");
-                }
-
-                else
-                {
-                    Debug.Log(values[i]);
-                    Debug.Log("Somethings gone wrong");
-                }
-            **/
-        }
-    }
- 
-    
-
-
-
-    /**
-     * The following is different attempts of trying to get the chair to wait, 
-     * not used in the Drive function right now but could be used if you think they would work better
-     **/
-    private void wait2(int seconds)
-    {
-        if (flag)
-        {
-            Debug.Log("Waiting");
-            timer -= Time.deltaTime;
-            if (timer < 0)
-            {
-                flag = false;
-            }
-        }
-    }
-
-
-    IEnumerator Wait(int second)
-    {
-        yield return new WaitForSecondsRealtime(second);
-        Debug.Log("Waiting");
-
-        controller.SetCurrentPositionToZero();
-        Debug.Log("Setting to zero");
-
-        done = false;
-    }
-
-    private void turnLeft()
-    {
-        controller.TurnLeftAtSpeed(90, 25);
-        Debug.Log("Turning left");
-        flag = true;
-    }
-
-    private void turnRight()
-    {
-        controller.TurnRightAtSpeed(90, 25);
-        Debug.Log("Turning right");
-    }
-
-
-    IEnumerator turnLeftWait()
-    {
-        yield return new WaitForSeconds(3);
-        Debug.Log("Waiting left");
-        
-        controller.TurnLeftAtSpeed(90, 25);
-        Debug.Log("Turning left");
-    }
-
-    IEnumerator turnRightWait()
-    {
-        yield return new WaitForSeconds(3);
-        Debug.Log("Waiting right");
-        
-        controller.TurnRightAtSpeed(90, 25);
-        Debug.Log("Turning right");
-    }
-
 }
 
 /**

@@ -11,7 +11,7 @@ public class TestController2 : MonoBehaviour
     bool flag = true;
     float timer = 5;
     public int rotation;
-    bool done = false;
+
 
     /**
     bool isFirstTime = true;
@@ -85,19 +85,12 @@ public class TestController2 : MonoBehaviour
     static string[] ReadText()
     {
         string path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/anglesSpeeds.txt";
+        List<string> list = new List<string>();
         string[] values;
 
         string text = System.IO.File.ReadAllText(@path);
 
-        values = text.Split(char.Parse(","));
-
-        /**
-        foreach (string line in text)
-        {
-            values = line.Split(char.Parse(","));
-            
-        }
-        **/
+        values = text.Split(char.Parse("\n"), char.Parse(","));
 
         return values;
 
@@ -194,8 +187,6 @@ public class TestController2 : MonoBehaviour
 
         controller.SetCurrentPositionToZero();
         Debug.Log("Setting to zero");
-
-        done = true;
     }
 
 
