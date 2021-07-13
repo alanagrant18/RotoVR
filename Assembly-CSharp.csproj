@@ -67,7 +67,17 @@
     <Compile Include="Assets\Roto\Scripts\Control\RotoController.cs" />
     <Compile Include="Assets\Roto\TestController.cs" />
     <Compile Include="Assets\Roto\TestController2.cs" />
-    <None Include="Assets\anglesSpeeds.txt" />
+    <None Include="Assets\Roto\Routes\drive1.txt" />
+    <None Include="Assets\Roto\Routes\drive5.txt" />
+    <None Include="Assets\Roto\Routes\thresholdRoute.txt" />
+    <None Include="Assets\Roto\Routes\mediumRoute.txt" />
+    <None Include="Assets\Roto\Routes\drive3.txt" />
+    <None Include="Assets\Roto\Routes\standardRoute.txt" />
+    <None Include="Assets\Roto\Routes\easyRoute.txt" />
+    <None Include="Assets\Roto\Routes\drive4.txt" />
+    <None Include="Assets\Roto\Routes\drive2.txt" />
+    <None Include="Assets\Roto\Routes\hardRoute.txt" />
+    <None Include="Assets\Roto\Routes\drive6.txt" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.14f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

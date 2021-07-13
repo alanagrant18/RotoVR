@@ -11,6 +11,7 @@ public class TestController : MonoBehaviour
     bool flag = true;
     float timer = 5;
     public int rotation;
+    public string path;
 
     /**
     bool isFirstTime = true;
@@ -37,71 +38,162 @@ public class TestController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Alpha1))
         {
-            Debug.Log("Performing calibration");
-            calibration.CalibrateChairZero(100);
+            controller.SetCurrentPositionToZero();
+
+            Debug.Log("Route 1 - Motorway Drive");
+            path =  "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive1.txt";
+            StartCoroutine(Drive());
+
+
+            //Debug.Log("Performing calibration");
+            //calibration.CalibrateChairZero(100);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha2))
         {
-            controller.MoveChairToZero(50);
+            controller.SetCurrentPositionToZero();
 
+            Debug.Log("Route 2 - Main Roads Drive");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive2.txt";
+            StartCoroutine(Drive());
+
+            //controller.MoveChairToZero(50);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
+            controller.SetCurrentPositionToZero();
+
+            Debug.Log("Route 3 - Housing Estate Drive");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive3.txt";
+            StartCoroutine(Drive());
+
             //sidetosiderotation();
+            //ReadText();
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha4))
         {
             controller.SetCurrentPositionToZero();
+
+            Debug.Log("Route 4 - West End Drive");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive4.txt";
             StartCoroutine(Drive());
         }
 
+        if (Input.GetKeyUp(KeyCode.Alpha5))
+        {
+            controller.SetCurrentPositionToZero();
+
+            Debug.Log("Route 5 - City Centre Drive");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive5.txt";
+            StartCoroutine(Drive());
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha6))
+        {
+            controller.SetCurrentPositionToZero();
+
+            Debug.Log("Route 6 - Loch Lommond Country Drive");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive6.txt";
+            StartCoroutine(Drive());
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha7))
+        {
+            controller.SetCurrentPositionToZero();
+
+            //Debug.Log("Hard Route - Loch Lommond");
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/mediumRoute.txt";
+            StartCoroutine(Drive());
+        }
+
+
+
+
         if (Input.GetKeyUp(KeyCode.LeftArrow))
         {
-            controller.TurnLeftAtSpeed(90, 30);
+            controller.TurnLeftAtSpeed(90, 20);
         }
 
         if (Input.GetKeyUp(KeyCode.RightArrow))
         {
-            controller.TurnRightAtSpeed(65, 20);
+            controller.TurnRightAtSpeed(90, 20);
         }
 
         if (Input.GetKeyUp(KeyCode.UpArrow))
         {
-            Debug.Log("Rotation " + controller.GetOutputRotation());
-            Debug.Log("Current angle " + controller.currentAngle);
+            Debug.Log("Current angle " + controller.GetOutputRotation());
+            //Debug.Log("Current angle " + controller.currentAngle);
+
         }
 
+        if (Input.GetKeyUp(KeyCode.DownArrow))
+        {
+            Debug.Log("Performing calibration");
+            calibration.CalibrateChairZero(100);
+
+        }
+
+        if (Input.GetKey(KeyCode.Alpha0))
+        {
+            controller.MoveChairToZero(50);
+        }
+    }
+
+
+
+
+    public string RandomRoute()
+    {
+        int route = (int)Random.Range(1f, 7f);
+
+        switch (route)
+        {
+            case 1:
+                Debug.Log("Route 1 - Motorway Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive1.txt";
+
+            case 2:
+                Debug.Log("Route 2 - Main Roads Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive2.txt";
+
+            case 3:
+                Debug.Log("Route 3 - Housing Estate Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive3.txt";
+
+            case 4:
+                Debug.Log("Route 4 - West End Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive4.txt";
+
+            case 5:
+                Debug.Log("Route 5 - City Centre Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive5.txt";
+
+            case 6:
+                Debug.Log("Route 6 - Loch Lommond Country Drive");
+                return "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/drive6.txt";
+
+            default:
+                return null;
+        }
     }
 
 
     /**
      * The 3 main functions 
     **/
-    static string[] ReadText()
+    public string[] ReadText()
     {
-        string path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/anglesSpeeds.txt";
         string[] values;
-
+        
         string text = System.IO.File.ReadAllText(@path);
 
+        //string text = System.IO.File.ReadAllText(@RandomRoute());
+        
         values = text.Split(char.Parse("\n"), char.Parse(","));
 
-        /**
-        Debug.Log(values[0]);
-        Debug.Log(values[1]);
-        Debug.Log(values[2]);
-        Debug.Log(values[3]);
-        Debug.Log(values[4]);
-        Debug.Log(values[5]);
-        Debug.Log(values[6]);
-        Debug.Log(values[7]);
-        **/
-
         return values;
-
     }
 
 
@@ -109,7 +201,7 @@ public class TestController : MonoBehaviour
     {
         if (rotation >= angle - 3 && rotation <= angle + 3)
         {
-            //.Log("Rotation calc right: " + rotation);
+            //Debug.Log("Rotation calc right: " + rotation);
 
             controller.SetCurrentPositionToZero();
             //Debug.Log("Setting to zero");
@@ -181,8 +273,11 @@ public class TestController : MonoBehaviour
                 Debug.Log("Something has gone wrong");
             }
         }
-        Debug.Log("Done Rotating");
+        Debug.Log("DONE ROTATING");
     }
+
+
+
 
 
 
