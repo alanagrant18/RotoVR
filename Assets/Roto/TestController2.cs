@@ -8,46 +8,50 @@ public class TestController2 : MonoBehaviour
 {
     RotoController controller;
     RotoCalibration calibration;
-    bool flag = false;
-    float timer = 5;
-    public int rotation;
     public string path;
+    public int rotation;
+    
+    //The following are used in automation and psuedo random functions
+    bool flag = false;
     public int log = 0;
     public int threshold_counter = 1;
     public int route_counter = 1;
 
 
-    // Start is called before the first frame update
     void Start()
     {
         controller = FindObjectOfType<RotoController>();
         calibration = FindObjectOfType<RotoCalibration>();
-
-        //calibration.CalibrateChairZero(100);
-        //controller.SyncRotoToVirtualRoto(80);
-        //controller.EnableFreeMode();
     }
 
-    // Update is called once per frame
+
     void Update()
     {
+        //Gets the current angle of the chair every frame
         rotation = controller.GetOutputRotation();
 
+        //Start the auto thresholding
         if (Input.GetKey(KeyCode.Alpha1))
         {
+            //Path to get the text file with the route in it
             path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/thresholdRoute.txt";
+
+            //Need to use StartCoroutine for these functions (not 100% why, what Unity tells me to do, i just do)
             StartCoroutine(Threshold());
         }
 
+        //Start the auto 6 experimental puesdo routes
         if (Input.GetKeyUp(KeyCode.Alpha2))
         {
             path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/standardRoute.txt";
             StartCoroutine(RandomAuto());
         }
 
+        //Start a the original route
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
-
+            path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/standardRoute.txt";
+            StartCoroutine(Drive());
         }
 
 
@@ -71,12 +75,14 @@ public class TestController2 : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.DownArrow))
         {
+            //Sets the chairs current angle to zero/default
             Debug.Log("Performing calibration");
             calibration.CalibrateChairZero(100);
         }
 
         if (Input.GetKey(KeyCode.Alpha0))
         {
+            //Moves the chair back to angle 0 at a speed of 40
             controller.MoveChairToZero(40);
         }
     }
@@ -92,8 +98,10 @@ public class TestController2 : MonoBehaviour
     {
         string[] values;
 
+        //Use this when you know the exact text file path you want to use
         string text = System.IO.File.ReadAllText(@path);
 
+        //Use this when you want to use the random route function to pick a path
         //string text = System.IO.File.ReadAllText(@RandomRoute());
 
         values = text.Split(char.Parse("\n"), char.Parse(","));
@@ -102,7 +110,7 @@ public class TestController2 : MonoBehaviour
     }
 
 
-    //Creates a dictionary with the route number being the key and the route instructions being the value
+    //Creates a dictionary with the instruction id being the key and the 4 char route instructions being the value
     public IDictionary<string, List<string>> Dict(string[] values)
     {
         IDictionary<string, List<string>> dictionary = new Dictionary<string, List<string>>();
@@ -125,7 +133,7 @@ public class TestController2 : MonoBehaviour
     }
 
 
-    //Creates a list of numbers from 1-21 in random order
+    //Creates a list of numbers from 1-31 in random order, 31 since there are 31 instructions in the text file
     public List<int> RandomOrder()
     {
         List<int> ids = new List<int>();
@@ -151,6 +159,7 @@ public class TestController2 : MonoBehaviour
     **/
     private bool CalcRotatingRight(int angle)
         {
+            //Example: Angle = 90 degrees, if the current angle is >= 87 or <= 93 then return true
             if (rotation >= angle - 3 && rotation <= angle + 3)
             {
                 controller.SetCurrentPositionToZero();
@@ -178,105 +187,6 @@ public class TestController2 : MonoBehaviour
 
 
     /**
-    * This code takes a text file route and randomises the order of the route.
-    * The code then loops through the random route and turns the chair accordindly.
-    * If the chair is going to pass 180 in one direction then it switches the instructions
-    * to then turn in the opposite direction.
-    **/
-    public IEnumerator RandomDrive()
-    {
-        IDictionary<string, List<string>> dictionary = Dict(ReadText());
-        List<int> ids = RandomOrder();
-
-        //for each value in the random list, look up that value as an id in the route dictionary to get the instructions.
-        foreach (int i in ids)
-        {
-            string id = i.ToString();
-
-            //id[0] = right or left, id[1] = angle, id[2] = speed, id[3] = wait time in seconds
-            if (char.Parse(dictionary[id][0]).Equals('R'))
-            {
-                log -= int.Parse(dictionary[id][1]);
-                //Debug.Log("Log: " + log);
-
-                if (log <= -180)
-                {
-                    controller.TurnLeftAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
-                    //Debug.Log("OVER -180; CHANGE TO TURNING LEFT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
-
-                    log += int.Parse(dictionary[id][1])*2;
-                    //Debug.Log("Over 180; minus log: " + log);
-
-                    //Debug.Log("Waiting until true");
-                    yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(dictionary[id][1])));
-
-                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
-                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
-                }
-
-                else
-                {
-                    controller.TurnRightAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
-                    //Debug.Log("TURNING RIGHT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
-
-                    //Debug.Log("Waiting until true");
-                    yield return new WaitUntil(() => CalcRotatingRight(int.Parse(dictionary[id][1])));
-
-                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
-                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
-                }
-
-            }
-
-            else if (char.Parse(dictionary[id][0]).Equals('L'))
-            {
-                log += int.Parse(dictionary[id][1]);
-                //Debug.Log("Log: " + log);
-
-                if (log >= 180)
-                {
-                    controller.TurnRightAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
-                    //Debug.Log("OVER 180; CHANGE TO TURNING RIGHT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
-
-                    log -= int.Parse(dictionary[id][1])*2;
-                    //Debug.Log("Over 180; minus log: " + log);
-
-                    //Debug.Log("Waiting until true");
-                    yield return new WaitUntil(() => CalcRotatingRight(int.Parse(dictionary[id][1])));
-
-                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
-                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
-                }
-               
-                else
-                {
-                    controller.TurnLeftAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
-                    //Debug.Log("TURNING LEFT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
-
-                    //Debug.Log("Waiting until true");
-                    yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(dictionary[id][1])));
-
-                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
-                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
-                }
-
-            }
-            else
-            {
-                Debug.Log(dictionary[id][0]);
-                Debug.Log(dictionary[id][1]);
-                Debug.Log(dictionary[id][2]);
-                Debug.Log(dictionary[id][3]);
-                Debug.Log("Something has gone wrong");
-            }
-        }
-        flag = true;
-        Debug.Log("Done rotating");
-    }
-
-
-
-    /**
      * This code reads in the text file route and instructs the chair on how to complete it
     **/
     public IEnumerator Drive()
@@ -284,7 +194,7 @@ public class TestController2 : MonoBehaviour
         string[] values;
         values = ReadText();
 
-        //for each rotation in the text file, excecute rotation and then wait 5s, value[i] = angle, value[i+1] = speed
+        //for each rotation in the text file, excecute rotation and then wait X seconds, value[i] = angle, value[i+1] = speed
         for (int i = 0; i < values.Length - 1; i += 4)
         {
             if (char.Parse(values[i]).Equals('R'))
@@ -292,11 +202,10 @@ public class TestController2 : MonoBehaviour
                 controller.TurnRightAtSpeed(int.Parse(values[i + 1]), int.Parse(values[i + 2]));
                 //Debug.Log("TURNING RIGHT: " + values[i + 1] + "   SPEED: " + values[i + 2]);
 
-                //Debug.Log("Waiting until true");
                 yield return new WaitUntil(() => CalcRotatingRight(int.Parse(values[i + 1])));
 
-                //Debug.Log("Waiting " + values[i + 3] + " seconds");
                 yield return new WaitForSecondsRealtime(int.Parse(values[i + 3]));
+                //Debug.Log("Waiting " + values[i + 3] + " seconds");
             }
 
             else if (char.Parse(values[i]).Equals('L'))
@@ -304,11 +213,10 @@ public class TestController2 : MonoBehaviour
                 controller.TurnLeftAtSpeed(int.Parse(values[i + 1]), int.Parse(values[i + 2]));
                 //Debug.Log("TURNING LEFT: " + values[i + 1] + "   SPEED: " + values[i + 2]);
 
-                //Debug.Log("Waiting until true");
                 yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(values[i + 1])));
 
-                //Debug.Log("Waiting " + values[i + 3] + " seconds");
                 yield return new WaitForSecondsRealtime(int.Parse(values[i + 3]));
+                //Debug.Log("Waiting " + values[i + 3] + " seconds");
             }
             else
             {
@@ -316,25 +224,131 @@ public class TestController2 : MonoBehaviour
                 Debug.Log("Something has gone wrong");
             }
         }
+        flag = true; //Needed for automation of routes
+        Debug.Log("Done rotating");
+    }
+
+
+    /**
+    * This code takes a text file route and randomises the order of the route.
+    * The code then loops through the random route and turns the chair accordindly.
+    * If the chair is going to pass 180 in one direction then it switches the instructions
+    * to then turn in the opposite direction.
+    **/
+    public IEnumerator RandomDrive()
+    {
+        //Get the dictionary of ids and instruactions
+        IDictionary<string, List<string>> dictionary = Dict(ReadText());
+
+        //Get the list of randomised numbers
+        List<int> ids = RandomOrder();
+
+        //for each value in the random list, look up that value as an id in the dictionary to get the instructions.
+        foreach (int i in ids)
+        {
+            string id = i.ToString();
+
+            //id[0] = right or left, id[1] = angle, id[2] = speed, id[3] = wait time in seconds
+            if (char.Parse(dictionary[id][0]).Equals('R'))
+            {
+                //log keeps track of the accumulation of the chairs angle, if turns right its negative
+                log -= int.Parse(dictionary[id][1]);;
+
+                if (log <= -180)
+                {
+                    controller.TurnLeftAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
+                    //Debug.Log("OVER -180; CHANGE TO TURNING LEFT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
+
+                    //in order to update the log value
+                    log += int.Parse(dictionary[id][1])*2;
+
+                    yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(dictionary[id][1])));
+
+                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
+                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
+                }
+
+                else
+                {
+                    controller.TurnRightAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
+                    //Debug.Log("TURNING RIGHT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
+
+                    yield return new WaitUntil(() => CalcRotatingRight(int.Parse(dictionary[id][1])));
+
+                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
+                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
+                }
+
+            }
+
+            else if (char.Parse(dictionary[id][0]).Equals('L'))
+            {
+                log += int.Parse(dictionary[id][1]);
+
+                if (log >= 180)
+                {
+                    controller.TurnRightAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
+                    //Debug.Log("OVER 180; CHANGE TO TURNING RIGHT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
+
+                    log -= int.Parse(dictionary[id][1])*2;
+
+                    yield return new WaitUntil(() => CalcRotatingRight(int.Parse(dictionary[id][1])));
+
+                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
+                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
+                }
+
+                else
+                {
+                    controller.TurnLeftAtSpeed(int.Parse(dictionary[id][1]), int.Parse(dictionary[id][2]));
+                    //Debug.Log("TURNING LEFT: " + dictionary[id][1] + "   SPEED: " + dictionary[id][2]);
+
+                    yield return new WaitUntil(() => CalcRotatingLeft(int.Parse(dictionary[id][1])));
+
+                    yield return new WaitForSecondsRealtime(int.Parse(dictionary[id][3]));
+                    //Debug.Log("Waiting " + dictionary[id][3] + " seconds");
+                }
+
+            }
+            else
+            {
+                //print the whole instruction
+                Debug.Log(dictionary[id][0]);
+                Debug.Log(dictionary[id][1]);
+                Debug.Log(dictionary[id][2]);
+                Debug.Log(dictionary[id][3]);
+                Debug.Log("Something has gone wrong");
+            }
+        }
+
         flag = true;
         Debug.Log("Done rotating");
     }
 
 
+
+
+
+
+
+    /**
+     * These 2 fucntions are for automating the experiment, thresholding and the actual run
+     **/
     public IEnumerator Threshold()
     {
-        Debug.Log("Threshold route");
+        //Debug.Log("Threshold route");
 
-        while (threshold_counter < 8)
+        while (threshold_counter <= 7)
         {
             Debug.Log("Threshold round: " + threshold_counter);
 
-            //Debug.Log(flag);
             if (flag == false)
             {
+                //Do a route, always set current position to zero (not 100% sure why but it hates you if you dont)
                 controller.SetCurrentPositionToZero();
                 StartCoroutine(Drive());
 
+                //Wait till the route is complete
                 yield return new WaitUntil(() => flag);
 
                 Debug.Log("Waiting 30s");
@@ -352,6 +366,8 @@ public class TestController2 : MonoBehaviour
     {
         Debug.Log("Original route");
         Debug.Log("Round: " + route_counter);
+
+        //This is the first round which runs the original route
         controller.SetCurrentPositionToZero();
         StartCoroutine(Drive());
 
@@ -364,11 +380,10 @@ public class TestController2 : MonoBehaviour
         route_counter += 1;
 
         Debug.Log("Puesdo randomised routes");
-        while (route_counter < 8)
+        while (route_counter < 7)
         {
             Debug.Log("Round: " + route_counter);
 
-            //Debug.Log(flag);
             if (flag == false)
             {
                 controller.SetCurrentPositionToZero();
@@ -395,8 +410,8 @@ public class TestController2 : MonoBehaviour
 
 
     /**
-     * The following is different attempts of trying to get the chair to wait, 
-     * not used in the Drive function right now but could be used if you think they would work better
+     * The following is different attempts of trying to get the chair to wait, turn, etc
+     * Not that relevant right now but could be of use
      **/
     public IEnumerator Wait(int second)
     {
@@ -408,41 +423,11 @@ public class TestController2 : MonoBehaviour
         route_counter += 1;
     }
 
-    /**
-    public IEnumerator WaitRotating(int angle)
-    {
-        while (CalcRotating(angle) is false)
-        {
-
-        }
-
-        Debug.Log("Waiting untill true");
-        yield return new WaitUntil(() => CalcRotating(angle));
-        //done = true;
-        //Debug.Log("Done is true");
-
-    }
-    **/
-
-    private void wait2(int seconds)
-    {
-        if (flag)
-        {
-            Debug.Log("Waiting");
-            timer -= Time.deltaTime;
-            if (timer < 0)
-            {
-                flag = false;
-            }
-        }
-    }
-
 
     private void turnLeft()
     {
         controller.TurnLeftAtSpeed(90, 25);
         Debug.Log("Turning left");
-        flag = true;
     }
 
 
@@ -472,6 +457,8 @@ public class TestController2 : MonoBehaviour
         Debug.Log("Turning right");
     }
 
+
+    //Used when there was 6 possible routes to choose from randomly
     public string RandomRoute()
     {
         int route = (int)Random.Range(1f, 7f);
@@ -509,6 +496,8 @@ public class TestController2 : MonoBehaviour
 
 
     /**
+     * Gang's original spinning function that was a bit hardcore
+     * 
     private void sidetosiderotation()
     {
         if (isFirstTime)
