@@ -338,7 +338,7 @@ public class TestController2 : MonoBehaviour
     {
         //Debug.Log("Threshold route");
 
-        while (threshold_counter <= 7)
+        while (threshold_counter != 7)
         {
             Debug.Log("Threshold round: " + threshold_counter);
 
@@ -380,7 +380,7 @@ public class TestController2 : MonoBehaviour
         route_counter += 1;
 
         Debug.Log("Puesdo randomised routes");
-        while (route_counter < 7)
+        while (route_counter != 7)
         {
             Debug.Log("Round: " + route_counter);
 
