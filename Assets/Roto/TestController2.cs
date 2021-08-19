@@ -47,13 +47,12 @@ public class TestController2 : MonoBehaviour
             StartCoroutine(RandomAuto());
         }
 
-        //Start a the original route
+        //Start a the standard route
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
             path = "C:/Users/MIG/Documents/GitHub/RotoVR/Assets/Roto/Routes/standardRoute.txt";
             StartCoroutine(Drive());
         }
-
 
 
 

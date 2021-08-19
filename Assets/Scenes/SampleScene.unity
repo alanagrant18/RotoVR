@@ -149,7 +149,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
@@ -341,11 +341,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 979702567}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e872be7fa6d9f2841a21454dfc27328a, type: 3}
+  m_Script: {fileID: 11500000, guid: ce60370bb2f253942a166a66577c3e61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotation: 0
   path: 
+  rotation: 0
+  log: 0
+  threshold_counter: 1
+  route_counter: 1
 --- !u!1001 &1436322431
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -401,7 +404,7 @@ PrefabInstance:
     - target: {fileID: 7143501445873239965, guid: b5e9cf5abbaa5494e9e297813661b566,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7143501445873239965, guid: b5e9cf5abbaa5494e9e297813661b566,
         type: 3}
