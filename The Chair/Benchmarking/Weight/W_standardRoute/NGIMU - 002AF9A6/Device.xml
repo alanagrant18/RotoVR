@@ -1,0 +1,18 @@
+<Device>
+  <DeviceInformation DeviceName="NGIMU" SerialNumber="002AF9A6" FirmwareVersion="v1.13 (Apr 18 2019 16:16:50)" BootloaderVersion="v1.1 (Sep 28 2016 17:05:48)" HardwareVersion="v1.6 (October 2017)" />
+  <ConnectionInformation ConnectionType="Serial" PortName="COM4" BaudRate="115200" RtsCtsEnabled="False" />
+  <TimeStamps First="2000-01-07 00:17:01.185" Last="2000-01-07 00:20:41.175" TimeSpan="00:03:39.990" />
+  <FilesCreated>
+    <File Name="sensors.csv" Messages="221" />
+    <File Name="magnitudes.csv" Messages="221" />
+    <File Name="quaternion.csv" Messages="221" />
+    <File Name="matrix.csv" Messages="221" />
+    <File Name="euler.csv" Messages="221" />
+    <File Name="linear.csv" Messages="221" />
+    <File Name="earth.csv" Messages="221" />
+    <File Name="temperature.csv" Messages="221" />
+    <File Name="humidity.csv" Messages="221" />
+    <File Name="battery.csv" Messages="220" />
+  </FilesCreated>
+  <Statistics BytesReceived="318807" PacketsReceived="5458" BundlesReceived="5380" MessagesReceived="5458" ReceiveErrors="0" />
+</Device>
